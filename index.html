@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<style>
+    main {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        margin-top: 500px;
+    }
+    .new-order {
+        display: flex;
+        flex-direction: column;
+        max-width: 250px;
+    }
+</style>
+<body>
+<main>
+    <div class="data">
+        <h1>Dane z systemów MES, ERP, CRM</h1>
+        <button onclick="fetchData()">Odśwież dane</button>
+        <pre id="output"></pre>
+    </div>
+    <form id="order-form">
+        <div class="new-order">
+            <h2>New order</h2>
+            <label>item_id</label>
+            <input type="number" name="item_id"/>
+            <label>client_id</label>
+            <input type="number" name="client_id"/>
+            <label>item_quantity</label>
+            <input type="number" name="item_quantity"/>
+            <label>price</label>
+            <input type="number" name="price"/>
+            <label>status</label>
+            <input type="text" name="status"/>
+            <button type="submit">Add order</button>
+        </div>
+    </form>
+</main>
+</body>
+<script>
+    const orderForm = document.getElementById('order-form');
+    orderForm.addEventListener('submit', addOrder);
+    fetchData();
+    async function addOrder(e) {
+        e.preventDefault();
+        arr = Array.from(e.srcElement).map(e => [e.name, e.value]).filter(e => e);
+        order = Object.fromEntries(arr);
+        console.log('created order', order);
+        const response = await fetch('http://localhost:3003/orders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(order)
+        });
+        const data = await response.json();
+        console.log('posted order', data);
+    }
+
+    async function fetchData() {
+        const MES = await fetch('http://localhost:3001/items').then(res => res.json());
+        const ERP = await fetch('http://localhost:3002/clients').then(res => res.json());
+        const CRM = await fetch('http://localhost:3003/orders').then(res => res.json());
+
+        document.getElementById('output').innerText = JSON.stringify({ MES, ERP, CRM }, null, 2);
+    }
+
+</script>
+</html>
+

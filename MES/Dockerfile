@@ -1,0 +1,3 @@
+from postgres
+copy create_tables create_tables
+env POSTGRES_PASSWORD=password
